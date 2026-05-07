@@ -6,8 +6,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+
 @RestController
 @RequestMapping("/api/todos")
+@CrossOrigin(origins = "http://localhost:5173")
 public class TodoController {
 
     private final TodoService service;
@@ -17,13 +19,21 @@ public class TodoController {
     }
 
     @GetMapping
-    public List<Todo> getAll() { return service.getAll(); }
+    public List<Todo> getAll() {
+        return service.getAll();
+    }
+
+
 
     @GetMapping("/{id}")
-    public Todo getById(@PathVariable String id) { return service.getById(id); }
+    public Todo getById(@PathVariable String id) {
+        return service.getById(id);
+    }
 
     @PostMapping
-    public Todo create(@RequestBody Todo todo) { return service.create(todo); }
+    public Todo create(@RequestBody Todo todo) {
+        return service.create(todo);
+    }
 
     @PutMapping("/{id}")
     public Todo update(@PathVariable String id, @RequestBody Todo todo) {
@@ -31,6 +41,8 @@ public class TodoController {
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable String id) { service.delete(id); }
+    public void delete(@PathVariable String id) {
+        service.delete(id);
+    }
 }
 
