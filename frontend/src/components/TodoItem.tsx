@@ -1,4 +1,3 @@
-import { deleteTodo } from "../services/todoApi"
 
 export default function TodoItem({ todo, onDelete }: any) {
     return (
