@@ -18,7 +18,7 @@ export default function TodoItem({ todo, onDelete, onToggle }: any) {
             </div>
 
             <div className="todo-actions">
-                <Link to={`/edit/${todo.id}`} className="todo-btn">✏️ Edit</Link>
+                <Link to={`/edit/${todo.id}`} className="todo-btn">Bearbeiten</Link>
                 <button className="todo-btn" onClick={() => onDelete(todo.id)}>🗑️</button>
             </div>
         </li>
