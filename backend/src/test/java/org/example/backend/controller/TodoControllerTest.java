@@ -1,106 +1,105 @@
-
-/*
 package org.example.backend.controller;
 
 import org.example.backend.model.Todo;
 import org.example.backend.service.TodoService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
-
-import org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration;
-import org.springframework.boot.webmvc.autoconfigure.error.ErrorMvcAutoConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.ObjectMapper;
+
 
 import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+
 
 @WebMvcTest(TodoController.class)
-@ImportAutoConfiguration({
-        WebMvcAutoConfiguration.class,
-        ErrorMvcAutoConfiguration.class
-})
 class TodoControllerTest {
 
     @Autowired
     MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     TodoService service;
 
-    @Test
-    void getAll_shouldReturnList() throws Exception {
-        when(service.getAll()).thenReturn(
-                List.of(new Todo(UUID.randomUUID(), "Test", "Desc", false))
-        );
+    @Autowired
+    ObjectMapper objectMapper;
 
+    // GET ALL
+    @Test
+    void getAll() throws Exception {
+        // GIVEN
+        when(service.getAll()).thenReturn(List.of(
+                new Todo(UUID.randomUUID(), "Test", "Desc", false)
+        ));
+
+        // WHEN + THEN
         mockMvc.perform(get("/api/todos"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].title").value("Test"));
+                .andExpect(jsonPath("$.size()").value(1));
     }
 
+    // GET BY ID
     @Test
-    void getById_shouldReturnTodo() throws Exception {
+    void getById() throws Exception {
+        // GIVEN
         UUID id = UUID.randomUUID();
+
         when(service.getById(id.toString()))
                 .thenReturn(new Todo(id, "Test", "Desc", false));
 
+        // WHEN + THEN
         mockMvc.perform(get("/api/todos/" + id))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Test"));
     }
 
+    // CREATE
     @Test
-    void create_shouldReturnCreatedTodo() throws Exception {
-        Todo created = new Todo(UUID.randomUUID(), "New", "Desc", false);
+    void create() throws Exception {
+        // GIVEN
+        Todo input = new Todo(null, "New", "Desc", false);
+        Todo saved = new Todo(UUID.randomUUID(), "New", "Desc", false);
 
-        when(service.create(any())).thenReturn(created);
+        when(service.create(any(Todo.class))).thenReturn(saved);
 
+        // WHEN + THEN
         mockMvc.perform(post("/api/todos")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "title": "New",
-                                  "description": "Desc",
-                                  "done": false
-                                }
-                                """))
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(input)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("New"));
+                .andExpect(jsonPath("$.title").value("New"))
+                .andExpect(jsonPath("$.id").exists());
     }
 
+    // UPDATE
     @Test
-    void update_shouldReturnUpdatedTodo() throws Exception {
+    void update() throws Exception {
+        // GIVEN
         UUID id = UUID.randomUUID();
-        Todo updated = new Todo(id, "Updated", "Desc2", true);
+        Todo input = new Todo(null, "Updated", "Desc", true);
+        Todo updated = new Todo(id, "Updated", "Desc", true);
 
-        when(service.update(eq(id.toString()), any())).thenReturn(updated);
+        when(service.update(eq(id.toString()), any(Todo.class)))
+                .thenReturn(updated);
 
+        // WHEN + THEN
         mockMvc.perform(put("/api/todos/" + id)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "title": "Updated",
-                                  "description": "Desc2",
-                                  "done": true
-                                }
-                                """))
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(input)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Updated"));
     }
 
-    @Test
-    void delete_shouldReturnOk() throws Exception {
-        mockMvc.perform(delete("/api/todos/" + UUID.randomUUID()))
-                .andExpect(status().isOk());
-    }
 }
-*/
