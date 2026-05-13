@@ -1,4 +1,3 @@
-
 package org.example.backend.service;
 
 import org.example.backend.model.Todo;
@@ -20,62 +19,77 @@ class TodoServiceTest {
 
     @Test
     void getAll_shouldReturnList() {
-        when(repo.findAll()).thenReturn(List.of(
-                new Todo(UUID.randomUUID(), "Test", "Desc", false)
-        ));
+        // GIVEN
+        Todo todo = new Todo(UUID.randomUUID(), "Test", "Desc", false);
+        when(repo.findAll()).thenReturn(List.of(todo));
 
+        // WHEN
         List<Todo> result = service.getAll();
 
+        // THEN
         assertEquals(1, result.size());
-        verify(repo).findAll();
+        assertEquals("Test", result.get(0).title());
     }
 
     @Test
     void getById_shouldReturnTodo() {
+        // GIVEN
         UUID id = UUID.randomUUID();
         Todo todo = new Todo(id, "Test", "Desc", false);
-
         when(repo.findById(id)).thenReturn(Optional.of(todo));
 
+        // WHEN
         Todo result = service.getById(id.toString());
 
+        // THEN
         assertEquals("Test", result.title());
-        verify(repo).findById(id);
+        assertEquals("Desc", result.description());
+        assertFalse(result.done());
     }
 
     @Test
-    void create_shouldGenerateNewUUID() {
+    void create_shouldGenerateIdAndSave() {
+        // GIVEN
         Todo input = new Todo(null, "New", "Desc", false);
+        Todo saved = new Todo(UUID.randomUUID(), "New", "Desc", false);
+        when(repo.save(any())).thenReturn(saved);
 
-        when(repo.save(any())).thenAnswer(inv -> inv.getArgument(0));
-
+        // WHEN
         Todo result = service.create(input);
 
+        // THEN
         assertNotNull(result.id());
         assertEquals("New", result.title());
-        verify(repo).save(any());
+        assertEquals("Desc", result.description());
     }
 
     @Test
     void update_shouldSaveUpdatedTodo() {
+        // GIVEN
         UUID id = UUID.randomUUID();
         Todo input = new Todo(null, "Updated", "Desc2", true);
+        Todo updated = new Todo(id, "Updated", "Desc2", true);
+        when(repo.save(any())).thenReturn(updated);
 
-        when(repo.save(any())).thenAnswer(inv -> inv.getArgument(0));
-
+        // WHEN
         Todo result = service.update(id.toString(), input);
 
+        // THEN
         assertEquals(id, result.id());
         assertEquals("Updated", result.title());
-        verify(repo).save(any());
+        assertEquals("Desc2", result.description());
+        assertTrue(result.done());
     }
 
     @Test
-    void delete_shouldCallRepo() {
+    void delete_shouldCallRepository() {
+        // GIVEN
         UUID id = UUID.randomUUID();
 
+        // WHEN
         service.delete(id.toString());
 
-        verify(repo).deleteById(id);
+        // THEN
+        verify(repo, times(1)).deleteById(id);
     }
 }
