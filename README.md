@@ -74,7 +74,7 @@ json
 
 5) DELETE – Todo löschen
 Code - /api/todos/{id}
----- -- -- ----
+
 ---- -- -- ----
 
 
